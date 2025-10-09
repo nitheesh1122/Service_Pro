@@ -1,0 +1,428 @@
+{% extends "base.html" %}
+
+{% block title %}User Dashboard - ServicePro{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Dashboard Header */
+    .dashboard-header {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+        border-radius: 0 0 20px 20px;
+    }
+    
+    .user-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    /* Stats Cards */
+    .stats-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .stats-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    }
+    
+    .stats-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+    
+    .stats-card.total::before {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    }
+    
+    .stats-card.pending::before {
+        background: linear-gradient(135deg, var(--warning-color) 0%, #f59e0b 100%);
+    }
+    
+    .stats-card.progress::before {
+        background: linear-gradient(135deg, var(--secondary-color) 0%, #059669 100%);
+    }
+    
+    .stats-card.completed::before {
+        background: linear-gradient(135deg, var(--success-color) 0%, #047857 100%);
+    }
+    
+    .stats-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+    }
+    
+    .stats-card.total .stats-icon {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+    }
+    
+    .stats-card.pending .stats-icon {
+        background: linear-gradient(135deg, var(--warning-color) 0%, #f59e0b 100%);
+    }
+    
+    .stats-card.progress .stats-icon {
+        background: linear-gradient(135deg, var(--secondary-color) 0%, #059669 100%);
+    }
+    
+    .stats-card.completed .stats-icon {
+        background: linear-gradient(135deg, var(--success-color) 0%, #047857 100%);
+    }
+    
+    .stats-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--gray-800);
+        margin-bottom: 0.5rem;
+    }
+    
+    .stats-label {
+        color: var(--gray-600);
+        font-weight: 500;
+    }
+    
+    /* Booking Cards */
+    .booking-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s ease;
+        border-left: 4px solid var(--primary-color);
+    }
+    
+    .booking-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+    }
+    
+    .booking-card.pending {
+        border-left-color: var(--warning-color);
+    }
+    
+    .booking-card.in-progress {
+        border-left-color: var(--secondary-color);
+    }
+    
+    .booking-card.completed {
+        border-left-color: var(--success-color);
+    }
+    
+    .booking-card.cancelled {
+        border-left-color: var(--danger-color);
+    }
+    
+    .service-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1rem;
+    }
+    
+    .booking-status {
+        padding: 0.25rem 0.75rem;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    
+    .status-pending {
+        background: rgba(217, 119, 6, 0.1);
+        color: var(--warning-color);
+    }
+    
+    .status-in-progress {
+        background: rgba(16, 185, 129, 0.1);
+        color: var(--secondary-color);
+    }
+    
+    .status-completed {
+        background: rgba(5, 150, 105, 0.1);
+        color: var(--success-color);
+    }
+    
+    .status-cancelled {
+        background: rgba(220, 38, 38, 0.1);
+        color: var(--danger-color);
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: var(--gray-600);
+    }
+    
+    .empty-state-icon {
+        font-size: 4rem;
+        color: var(--gray-300);
+        margin-bottom: 1rem;
+    }
+    
+    /* Quick Actions */
+    .quick-actions {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        margin-bottom: 2rem;
+    }
+    
+    .action-btn {
+        display: flex;
+        align-items: center;
+        padding: 1rem;
+        border-radius: 12px;
+        text-decoration: none;
+        color: var(--gray-700);
+        transition: all 0.3s ease;
+        border: 2px solid transparent;
+    }
+    
+    .action-btn:hover {
+        background: rgba(37, 99, 235, 0.05);
+        border-color: var(--primary-color);
+        color: var(--primary-color);
+        text-decoration: none;
+    }
+    
+    .action-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        margin-right: 1rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Dashboard Header -->
+<section class="dashboard-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="user-avatar mx-auto mx-md-0">
+                    {{ current_user.name[0].upper() }}
+                </div>
+                <h1 class="h2 mb-2">Welcome back, {{ current_user.name }}!</h1>
+                <p class="mb-0 opacity-75">{{ current_user.email }} | {{ current_user.phone or 'No phone number' }}</p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <a href="{{ url_for('search_providers') }}" class="btn btn-light">
+                    <i class="fas fa-search me-2"></i>Find Services
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+        <h5 class="mb-3"><i class="fas fa-bolt me-2"></i>Quick Actions</h5>
+        <div class="row g-3">
+            <div class="col-md-4">
+                <a href="{{ url_for('search_providers') }}" class="action-btn">
+                    <div class="action-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Find Services</h6>
+                        <small class="text-muted">Search for service providers</small>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{{ url_for('user_dashboard') }}" class="action-btn">
+                    <div class="action-icon">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">Booking History</h6>
+                        <small class="text-muted">View past bookings</small>
+                    </div>
+                </a>
+            </div>
+            <div class="col-md-4">
+                <a href="{{ url_for('user_dashboard') }}" class="action-btn">
+                    <div class="action-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <div>
+                        <h6 class="mb-1">My Reviews</h6>
+                        <small class="text-muted">Manage your reviews</small>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="stats-card total">
+                <div class="stats-icon">
+                    <i class="fas fa-calendar-check"></i>
+                </div>
+                <div class="stats-number">{{ bookings|length }}</div>
+                <div class="stats-label">Total Bookings</div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stats-card pending">
+                <div class="stats-icon">
+                    <i class="fas fa-clock"></i>
+                </div>
+                <div class="stats-number">{{ bookings|selectattr('status', 'equalto', 'pending')|list|length }}</div>
+                <div class="stats-label">Pending</div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stats-card progress">
+                <div class="stats-icon">
+                    <i class="fas fa-tools"></i>
+                </div>
+                <div class="stats-number">{{ bookings|selectattr('status', 'equalto', 'in_progress')|list|length }}</div>
+                <div class="stats-label">In Progress</div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stats-card completed">
+                <div class="stats-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <div class="stats-number">{{ bookings|selectattr('status', 'equalto', 'completed')|list|length }}</div>
+                <div class="stats-label">Completed</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bookings Section -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-list me-2"></i>My Bookings
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if bookings %}
+                <div class="row">
+                    {% for booking in bookings %}
+                    <div class="col-12 mb-3">
+                        <div class="booking-card {{ booking.status }}">
+                            <div class="row align-items-center">
+                                <div class="col-md-2 mb-3 mb-md-0">
+                                    <div class="d-flex align-items-center">
+                                        <div class="service-icon me-3">
+                                            <i class="fas fa-{{ 'wrench' if booking.service.category == 'Plumber' else 'bolt' if booking.service.category == 'Electrician' else 'broom' if booking.service.category == 'Cleaner' else 'hammer' if booking.service.category == 'Carpenter' else 'paint-brush' if booking.service.category == 'Painter' else 'cogs' }}"></i>
+                                        </div>
+                                        <div>
+                                            <h6 class="mb-1">{{ booking.service.category }}</h6>
+                                            <small class="text-muted">{{ booking.service.description }}</small>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-2 mb-3 mb-md-0">
+                                    <div>
+                                        <h6 class="mb-1">{{ booking.provider.user.name }}</h6>
+                                        <small class="text-muted">{{ booking.provider.user.phone }}</small>
+                                        {% if availability_info and availability_info.get(booking.id) %}
+                                        <div class="mt-1">
+                                            <small class="text-muted">
+                                                <i class="far fa-clock me-1"></i>
+                                                Next availability: {{ availability_info.get(booking.id).strftime('%b %d, %Y %I:%M %p') if availability_info.get(booking.id) else 'Not available' }}
+                                            </small>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="col-md-2 mb-3 mb-md-0">
+                                    <span class="booking-status status-{{ booking.status }}">
+                                        {{ booking.status.replace('_', ' ').title() }}
+                                    </span>
+                                </div>
+                                <div class="col-md-2 mb-3 mb-md-0">
+                                    <h6 class="mb-0">${{ "%.2f"|format(booking.total_amount) if booking.total_amount else "TBD" }}</h6>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="d-flex gap-2">
+                                        <a href="{{ url_for('chat', user_id=booking.provider.user.id) }}" class="btn btn-sm btn-outline-primary" title="Chat">
+                                            <i class="fas fa-comments"></i>
+                                        </a>
+                                        {% if booking.status == 'pending' %}
+                                            <form method="POST" action="{{ url_for('update_booking_status', booking_id=booking.id) }}" class="d-inline">
+                                                <input type="hidden" name="status" value="cancelled">
+                                                <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to cancel this booking?')" title="Cancel">
+                                                    <i class="fas fa-times"></i>
+                                                </button>
+                                            </form>
+                                        {% endif %}
+                                        {% if booking.status == 'completed' %}
+                                            <a href="{{ url_for('add_review', booking_id=booking.id) }}" class="btn btn-sm btn-outline-success" title="Review">
+                                                <i class="fas fa-star"></i>
+                                            </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-calendar-times"></i>
+                    </div>
+                    <h4 class="text-muted">No bookings yet</h4>
+                    <p class="text-muted mb-3">Start by finding and booking a service provider.</p>
+                    <a href="{{ url_for('search_providers') }}" class="btn btn-primary">
+                        <i class="fas fa-search me-2"></i>Find Services
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

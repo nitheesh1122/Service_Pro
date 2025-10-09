@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+
+{% block title %}Upload Verification Documents - Provider{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-file-upload me-2"></i>Provider Verification
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Verification Status -->
+                    <div class="alert {% if provider.verification_status == 'verified' %}alert-success{% elif provider.verification_status == 'pending' %}alert-warning{% else %}alert-danger{% endif %}">
+                        <h5><i class="fas fa-info-circle me-2"></i>Verification Status: {{ provider.verification_status.title() }}</h5>
+                        {% if provider.verification_status == 'pending' %}
+                            <p>Your account is pending admin verification. Please upload your documents below.</p>
+                        {% elif provider.verification_status == 'verified' %}
+                            <p>✓ Your account is verified! You can now receive bookings.</p>
+                        {% else %}
+                            <p>Your verification was rejected. Please contact admin or upload new documents.</p>
+                        {% endif %}
+                    </div>
+
+                    <!-- Document Upload Form -->
+                    <div class="border rounded p-4 mb-4">
+                        <h5 class="mb-3"><i class="fas fa-cloud-upload-alt me-2"></i>Upload Verification Documents</h5>
+                        <form id="uploadForm" enctype="multipart/form-data">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="government_id" class="form-label">Government ID Proof *</label>
+                                    <input type="file" class="form-control" id="government_id" name="government_id" accept=".jpg,.jpeg,.png,.pdf" required>
+                                    <div class="form-text">Upload Aadhaar, PAN, Driving License, or Passport</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="business_license" class="form-label">Business License/Certificate</label>
+                                    <input type="file" class="form-control" id="business_license" name="business_license" accept=".jpg,.jpeg,.png,.pdf">
+                                    <div class="form-text">Upload business registration or trade license (if applicable)</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="profile_photo" class="form-label">Profile Photo *</label>
+                                    <input type="file" class="form-control" id="profile_photo" name="profile_photo" accept=".jpg,.jpeg,.png" required>
+                                    <div class="form-text">Upload a clear professional photo</div>
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-upload me-2"></i>Upload Documents
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Uploaded Documents -->
+                    {% if verification_docs %}
+                    <div class="border rounded p-4">
+                        <h5 class="mb-3"><i class="fas fa-file-alt me-2"></i>Uploaded Documents</h5>
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Document Type</th>
+                                        <th>Upload Date</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for doc in verification_docs %}
+                                    <tr>
+                                        <td>{{ doc.document_type.replace('_', ' ').title() }}</td>
+                                        <td>{{ doc.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                                        <td>
+                                            <span class="badge bg-{{ 'success' if doc.status == 'approved' else 'warning' if doc.status == 'pending' else 'danger' }}">
+                                                {{ doc.status.title() }}
+                                            </span>
+                                            {% if doc.admin_notes %}
+                                                <br><small class="text-muted">{{ doc.admin_notes }}</small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" onclick="viewDocument({{ doc.id }})">
+                                                <i class="fas fa-eye"></i> View
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ url_for('provider_dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                        </a>
+                        {% if provider.verification_status == 'rejected' %}
+                        <a href="{{ url_for('provider_reapply') }}" class="btn btn-warning">
+                            <i class="fas fa-redo me-2"></i>Reapply for Verification
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.getElementById('uploadForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const formData = new FormData(this);
+
+    try {
+        const response = await fetch('/provider/upload_verification_docs', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            alert(result.message);
+            location.reload();
+        } else {
+            alert('Error: ' + result.error);
+        }
+    } catch (error) {
+        alert('Upload failed: ' + error.message);
+    }
+});
+
+function viewDocument(docId) {
+    // This would typically open the document in a modal or new tab
+    window.open('/uploads/verification_docs/doc_' + docId, '_blank');
+}
+</script>
+{% endblock %}
+{% endblock %}

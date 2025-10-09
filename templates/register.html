@@ -1,0 +1,158 @@
+{% extends "base.html" %}
+
+{% block title %}Register - ServicePro{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-body p-5">
+                    <div class="text-center mb-4">
+                        <h2 class="fw-bold">Create Your Account</h2>
+                        <p class="text-muted">Join ServicePro and connect with trusted service providers</p>
+                    </div>
+                    <form method="POST" action="{{ url_for('register') }}" enctype="multipart/form-data">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="name" class="form-label">Full Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="email" class="form-label">Email Address *</label>
+                                <input type="email" class="form-control" id="email" name="email" required>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="password" class="form-label">Password *</label>
+                                <input type="password" class="form-control" id="password" name="password" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="phone" class="form-label">Phone Number *</label>
+                                <input type="tel" class="form-control" id="phone" name="phone" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="role" class="form-label">Register as *</label>
+                            <select class="form-select" id="role" name="role" required>
+                                <option value="">Select your role</option>
+                                <option value="user">Home Owner (Looking for services)</option>
+                                <option value="provider">Service Provider (Offering services)</option>
+                            </select>
+                        </div>
+
+                        <!-- Provider specific fields -->
+                        <div id="provider-fields" class="border rounded p-3 mb-4" style="display:none;">
+                            <h5 class="mb-3"><i class="fas fa-tools me-2"></i>Provider Details</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="service_categories" class="form-label">Service Categories *</label>
+                                    <select class="form-select" id="service_categories" name="service_categories" multiple>
+                                        <option value="Plumber">Plumber</option>
+                                        <option value="Electrician">Electrician</option>
+                                        <option value="Cleaner">Cleaner</option>
+                                        <option value="Carpenter">Carpenter</option>
+                                        <option value="Painter">Painter</option>
+                                    </select>
+                                    <small class="text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="service_pincodes" class="form-label">Serviceable Pincodes *</label>
+                                    <input type="text" class="form-control" id="service_pincodes" name="service_pincodes" placeholder="e.g., 560001, 560002" >
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="hourly_rate" class="form-label">Hourly Rate ($) *</label>
+                                    <input type="number" class="form-control" id="hourly_rate" name="hourly_rate" step="0.01" min="0">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="experience_years" class="form-label">Experience (years) *</label>
+                                    <input type="number" class="form-control" id="experience_years" name="experience_years" min="0">
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="availability" class="form-label">Availability</label>
+                                    <input type="text" class="form-control" id="availability" name="availability" placeholder='e.g., "Mon-Fri 09:00-17:00" or JSON by day'>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">About Your Services</label>
+                                <textarea class="form-control" id="description" name="description" rows="3" placeholder="Describe your services, skills, and specialties"></textarea>
+                            </div>
+
+                            <h5 class="mb-3"><i class="fas fa-file-upload me-2"></i>Verification Documents</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="government_id" class="form-label">Government ID Proof *</label>
+                                    <input type="file" class="form-control" id="government_id" name="government_id" accept=".jpg,.jpeg,.png,.pdf">
+                                    <div class="form-text">Aadhaar, PAN, DL, or Passport</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="business_license" class="form-label">Business License/Certificate</label>
+                                    <input type="file" class="form-control" id="business_license" name="business_license" accept=".jpg,.jpeg,.png,.pdf">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="profile_photo" class="form-label">Profile Photo *</label>
+                                    <input type="file" class="form-control" id="profile_photo" name="profile_photo" accept=".jpg,.jpeg,.png">
+                                </div>
+                            </div>
+                        </div>
+
+                        
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Address *</label>
+                            <textarea class="form-control" id="address" name="address" rows="3" required></textarea>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="pincode" class="form-label">Pincode/Zip Code *</label>
+                            <input type="text" class="form-control" id="pincode" name="pincode" required>
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-user-plus me-2"></i>Create Account
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <div class="text-center mt-4">
+                        <p class="mb-0">Already have an account? <a href="{{ url_for('login') }}" class="text-decoration-none">Login here</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    (function(){
+        const roleEl = document.getElementById('role');
+        const providerFields = document.getElementById('provider-fields');
+        function toggleProvider(){
+            if(roleEl.value === 'provider'){
+                providerFields.style.display = '';
+                // Mark provider fields required where applicable
+                document.getElementById('service_pincodes').required = true;
+                document.getElementById('hourly_rate').required = true;
+                document.getElementById('experience_years').required = true;
+            } else {
+                providerFields.style.display = 'none';
+                document.getElementById('service_pincodes').required = false;
+                document.getElementById('hourly_rate').required = false;
+                document.getElementById('experience_years').required = false;
+            }
+        }
+        roleEl.addEventListener('change', toggleProvider);
+        toggleProvider();
+    })();
+</script>
+{% endblock %}

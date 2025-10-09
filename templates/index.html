@@ -1,0 +1,560 @@
+{% extends "base.html" %}
+
+{% block title %}ServicePro - Smart Household Services{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Hero Section */
+    .hero-section {
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        color: white;
+        padding: 120px 0 80px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 1000"><polygon fill="rgba(255,255,255,0.1)" points="0,1000 1000,0 1000,1000"/></svg>');
+        background-size: cover;
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 2;
+    }
+    
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+        line-height: 1.2;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.25rem;
+        margin-bottom: 2rem;
+        opacity: 0.9;
+    }
+    
+    .hero-image {
+        width: 100%;
+        max-width: 500px;
+        height: auto;
+        border-radius: 20px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+        transition: transform 0.3s ease;
+    }
+    
+    .hero-image:hover {
+        transform: scale(1.05);
+    }
+    
+    /* Service Cards */
+    .service-card {
+        text-align: center;
+        padding: 2.5rem 1.5rem;
+        border: none;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        height: 100%;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .service-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 4px;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        transform: scaleX(0);
+        transition: transform 0.3s ease;
+    }
+    
+    .service-card:hover::before {
+        transform: scaleX(1);
+    }
+    
+    .service-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+    }
+    
+    .service-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        margin: 0 auto 1.5rem;
+        transition: transform 0.3s ease;
+    }
+    
+    .service-card:hover .service-icon {
+        transform: scale(1.1) rotate(5deg);
+    }
+    
+    .service-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+        color: var(--gray-800);
+    }
+    
+    .service-description {
+        color: var(--gray-600);
+        line-height: 1.6;
+    }
+    
+    /* How It Works Section */
+    .step-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem 1.5rem;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        height: 100%;
+        position: relative;
+    }
+    
+    .step-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+    
+    .step-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-dark) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 2rem;
+        margin: 0 auto 1.5rem;
+        transition: transform 0.3s ease;
+    }
+    
+    .step-card:hover .step-icon {
+        transform: scale(1.1);
+    }
+    
+    .step-number {
+        position: absolute;
+        top: -10px;
+        right: -10px;
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: var(--accent-color);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+    
+    /* Testimonials Section */
+    .testimonial-card {
+        background: white;
+        border-radius: 20px;
+        padding: 2rem;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+        height: 100%;
+    }
+    
+    .testimonial-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+    }
+    
+    .testimonial-avatar {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    .testimonial-rating {
+        color: var(--accent-color);
+        margin-bottom: 1rem;
+    }
+    
+    .testimonial-text {
+        font-style: italic;
+        color: var(--gray-600);
+        margin-bottom: 1rem;
+        line-height: 1.6;
+    }
+    
+    .testimonial-author {
+        font-weight: 600;
+        color: var(--gray-800);
+        margin-bottom: 0.25rem;
+    }
+    
+    .testimonial-location {
+        color: var(--gray-600);
+        font-size: 0.875rem;
+    }
+    
+    /* Stats Section */
+    .stats-section {
+        background: linear-gradient(135deg, var(--gray-800) 0%, var(--dark-color) 100%);
+        color: white;
+        padding: 4rem 0;
+    }
+    
+    .stat-card {
+        text-align: center;
+        padding: 2rem 1rem;
+    }
+    
+    .stat-number {
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--primary-color);
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        font-size: 1.125rem;
+        opacity: 0.9;
+    }
+    
+    /* CTA Section */
+    .cta-section {
+        background: linear-gradient(135deg, var(--secondary-color) 0%, #059669 100%);
+        color: white;
+        padding: 4rem 0;
+    }
+    
+    .cta-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+    }
+    
+    .cta-subtitle {
+        font-size: 1.125rem;
+        opacity: 0.9;
+        margin-bottom: 2rem;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .hero-title {
+            font-size: 2.5rem;
+        }
+        
+        .hero-subtitle {
+            font-size: 1.125rem;
+        }
+        
+        .service-card {
+            padding: 2rem 1rem;
+        }
+        
+        .step-card {
+            padding: 1.5rem 1rem;
+        }
+        
+        .cta-title {
+            font-size: 2rem;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6 hero-content">
+                <h1 class="hero-title">Find Trusted Service Providers Near You</h1>
+                <p class="hero-subtitle">Connect with verified plumbers, electricians, cleaners, and more. Book services instantly and get quality work done at your doorstep.</p>
+                <div class="d-flex gap-3 flex-wrap">
+                    <a href="{{ url_for('search_providers') }}" class="btn btn-light btn-lg">
+                        <i class="fas fa-search me-2"></i>Find Services
+                    </a>
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>Join Now
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <img src="https://images.unsplash.com/photo-1558618666-fcd25c85cd64?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80" 
+                     alt="Professional Service Provider" 
+                     class="hero-image">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Services Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold text-gradient">Our Services</h2>
+            <p class="lead text-muted">Professional services for all your household needs</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card service-card h-100">
+                    <div class="service-icon">
+                        <i class="fas fa-wrench"></i>
+                    </div>
+                    <h4 class="service-title">Plumbing</h4>
+                    <p class="service-description">Expert plumbing services for repairs, installations, and maintenance. From leaky faucets to complete bathroom renovations.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card service-card h-100">
+                    <div class="service-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <h4 class="service-title">Electrical</h4>
+                    <p class="service-description">Professional electrical work including wiring, repairs, and installations. Licensed electricians for your safety.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card service-card h-100">
+                    <div class="service-icon">
+                        <i class="fas fa-broom"></i>
+                    </div>
+                    <h4 class="service-title">Cleaning</h4>
+                    <p class="service-description">Comprehensive cleaning services for homes and offices. Regular maintenance and deep cleaning solutions.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card service-card h-100">
+                    <div class="service-icon">
+                        <i class="fas fa-hammer"></i>
+                    </div>
+                    <h4 class="service-title">Carpentry</h4>
+                    <p class="service-description">Skilled carpentry work for furniture and home improvements. Custom woodwork and repairs.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card service-card h-100">
+                    <div class="service-icon">
+                        <i class="fas fa-paint-brush"></i>
+                    </div>
+                    <h4 class="service-title">Painting</h4>
+                    <p class="service-description">Professional painting services for interior and exterior projects. Quality finishes and color consultation.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="card service-card h-100">
+                    <div class="service-icon">
+                        <i class="fas fa-cogs"></i>
+                    </div>
+                    <h4 class="service-title">More Services</h4>
+                    <p class="service-description">Find specialized services for all your unique household requirements. From landscaping to appliance repair.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Stats Section -->
+<section class="stats-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number">500+</div>
+                    <div class="stat-label">Service Providers</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number">10,000+</div>
+                    <div class="stat-label">Happy Customers</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number">50+</div>
+                    <div class="stat-label">Service Categories</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-number">4.8★</div>
+                    <div class="stat-label">Average Rating</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- How It Works Section -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold text-gradient">How It Works</h2>
+            <p class="lead text-muted">Simple steps to get your services booked</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-3">
+                <div class="step-card">
+                    <div class="step-number">1</div>
+                    <div class="step-icon">
+                        <i class="fas fa-search"></i>
+                    </div>
+                    <h5>Search</h5>
+                    <p class="text-muted">Enter your location and service type to find nearby providers.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="step-card">
+                    <div class="step-number">2</div>
+                    <div class="step-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <h5>Choose</h5>
+                    <p class="text-muted">Browse profiles, ratings, and reviews to select the best provider.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="step-card">
+                    <div class="step-number">3</div>
+                    <div class="step-icon">
+                        <i class="fas fa-calendar-check"></i>
+                    </div>
+                    <h5>Book</h5>
+                    <p class="text-muted">Schedule your service at your preferred date and time.</p>
+                </div>
+            </div>
+            
+            <div class="col-md-3">
+                <div class="step-card">
+                    <div class="step-number">4</div>
+                    <div class="step-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <h5>Rate</h5>
+                    <p class="text-muted">Rate and review the service to help other users.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="py-5">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="display-5 fw-bold text-gradient">What Our Customers Say</h2>
+            <p class="lead text-muted">Real reviews from satisfied customers</p>
+        </div>
+        
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-avatar">S</div>
+                    <div class="testimonial-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="testimonial-text">"Excellent service! The plumber was professional, on time, and fixed our leak quickly. Highly recommended!"</p>
+                    <div class="testimonial-author">Sarah Johnson</div>
+                    <div class="testimonial-location">New York, NY</div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-avatar">M</div>
+                    <div class="testimonial-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="testimonial-text">"The electrician was very knowledgeable and completed the work efficiently. Great value for money!"</p>
+                    <div class="testimonial-author">Mike Chen</div>
+                    <div class="testimonial-location">Los Angeles, CA</div>
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="testimonial-card">
+                    <div class="testimonial-avatar">E</div>
+                    <div class="testimonial-rating">
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <p class="testimonial-text">"Amazing cleaning service! The team was thorough and left our home spotless. Will definitely use again!"</p>
+                    <div class="testimonial-author">Emily Rodriguez</div>
+                    <div class="testimonial-location">Chicago, IL</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CTA Section -->
+<section class="cta-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h2 class="cta-title">Ready to Get Started?</h2>
+                <p class="cta-subtitle">Join thousands of satisfied customers who trust ServicePro for their household needs.</p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="{{ url_for('register') }}" class="btn btn-light btn-lg">
+                        <i class="fas fa-user-plus me-2"></i>Register as User
+                    </a>
+                    <a href="{{ url_for('register') }}" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-tools me-2"></i>Become a Provider
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %} 

@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+
+{% block title %}Reapply for Verification - Provider{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-10">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-redo me-2"></i>Reapply for Verification
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>
+                        <strong>Previous Application Rejected:</strong> Your verification was rejected. Please review the feedback, update your information, and upload corrected documents.
+                    </div>
+
+                    <form method="POST" action="{{ url_for('provider_reapply') }}" enctype="multipart/form-data">
+                        <!-- Provider Details Section -->
+                        <div class="border rounded p-3 mb-4">
+                            <h5 class="mb-3"><i class="fas fa-tools me-2"></i>Update Provider Details</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="service_categories" class="form-label">Service Categories *</label>
+                                    <select class="form-select" id="service_categories" name="service_categories" multiple required>
+                                        <option value="Plumber" {% if 'Plumber' in provider.service_categories %}selected{% endif %}>Plumber</option>
+                                        <option value="Electrician" {% if 'Electrician' in provider.service_categories %}selected{% endif %}>Electrician</option>
+                                        <option value="Cleaner" {% if 'Cleaner' in provider.service_categories %}selected{% endif %}>Cleaner</option>
+                                        <option value="Carpenter" {% if 'Carpenter' in provider.service_categories %}selected{% endif %}>Carpenter</option>
+                                        <option value="Painter" {% if 'Painter' in provider.service_categories %}selected{% endif %}>Painter</option>
+                                    </select>
+                                    <small class="text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple</small>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="service_pincodes" class="form-label">Serviceable Pincodes *</label>
+                                    <input type="text" class="form-control" id="service_pincodes" name="service_pincodes"
+                                           value="{{ provider.service_pincodes }}" placeholder="e.g., 560001, 560002" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="hourly_rate" class="form-label">Hourly Rate ($) *</label>
+                                    <input type="number" class="form-control" id="hourly_rate" name="hourly_rate"
+                                           value="{{ provider.hourly_rate }}" step="0.01" min="0" required>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="experience_years" class="form-label">Experience (years) *</label>
+                                    <input type="number" class="form-control" id="experience_years" name="experience_years"
+                                           value="{{ provider.experience_years }}" min="0" required>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="availability" class="form-label">Availability</label>
+                                    <input type="text" class="form-control" id="availability" name="availability"
+                                           value="{{ provider.availability }}" placeholder='e.g., "Mon-Fri 09:00-17:00"'>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">About Your Services</label>
+                                <textarea class="form-control" id="description" name="description" rows="3"
+                                          placeholder="Describe your services, skills, and specialties">{{ provider.description }}</textarea>
+                            </div>
+                        </div>
+
+                        <!-- Document Upload Section -->
+                        <div class="border rounded p-3 mb-4">
+                            <h5 class="mb-3"><i class="fas fa-file-upload me-2"></i>Upload Verification Documents</h5>
+
+                            <!-- Existing Documents Status -->
+                            {% if verification_docs %}
+                            <div class="mb-4">
+                                <h6>Previous Documents:</h6>
+                                <div class="row">
+                                    {% for doc in verification_docs %}
+                                    <div class="col-md-4 mb-2">
+                                        <div class="alert alert-{% if doc.status == 'approved' %}success{% elif doc.status == 'rejected' %}danger{% else %}warning{% endif %} py-2">
+                                            <small>
+                                                <strong>{{ doc.document_type.title() }}</strong><br>
+                                                Status: {{ doc.status.title() }}
+                                                {% if doc.admin_notes %}
+                                                    <br><em>Admin: {{ doc.admin_notes }}</em>
+                                                {% endif %}
+                                            </small>
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            {% endif %}
+
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="government_id" class="form-label">Government ID Proof *</label>
+                                    <input type="file" class="form-control" id="government_id" name="government_id" accept=".jpg,.jpeg,.png,.pdf">
+                                    <div class="form-text">Upload a new or corrected Government ID (Aadhaar, PAN, DL, or Passport)</div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="business_license" class="form-label">Business License/Certificate</label>
+                                    <input type="file" class="form-control" id="business_license" name="business_license" accept=".jpg,.jpeg,.png,.pdf">
+                                    <div class="form-text">Upload updated business license or certificate</div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="profile_photo" class="form-label">Profile Photo *</label>
+                                    <input type="file" class="form-control" id="profile_photo" name="profile_photo" accept=".jpg,.jpeg,.png">
+                                    <div class="form-text">Upload a new professional profile photo</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{{ url_for('provider_dashboard') }}" class="btn btn-outline-secondary me-md-2">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Reapplication
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    // Mark provider fields as required
+    document.addEventListener('DOMContentLoaded', function() {
+        document.getElementById('service_pincodes').required = true;
+        document.getElementById('hourly_rate').required = true;
+        document.getElementById('experience_years').required = true;
+    });
+</script>
+{% endblock %}
+{% endblock %}

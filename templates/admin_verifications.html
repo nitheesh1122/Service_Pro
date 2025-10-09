@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+
+{% block title %}Admin - Pending Verifications - ServicePro{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2>Pending Provider Verifications</h2>
+            <p class="text-muted mb-0">Review and verify provider documents</p>
+        </div>
+        <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+
+    {% if pending_verifications %}
+        {% for provider, user in pending_verifications %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">{{ user.name }} ({{ user.email }})</h5>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <strong>Provider ID:</strong> {{ provider.id }}<br>
+                        <strong>Phone:</strong> {{ user.phone }}<br>
+                        <strong>Address:</strong> {{ user.address }}
+                    </div>
+                    <div class="col-md-6">
+                        {% if provider.service_categories %}
+                        <strong>Services:</strong> {{ provider.service_categories.replace(',', ', ') }}<br>
+                        {% endif %}
+                        <strong>Status:</strong>
+                        <span class="badge bg-{{ 'success' if provider.verification_status == 'verified' else 'warning' if provider.verification_status == 'pending' else 'danger' }}">
+                            {{ provider.verification_status.title() }}
+                        </span>
+                    </div>
+                </div>
+
+                <h6>Verification Documents:</h6>
+                <div class="row">
+                    {% for doc in provider.verification_docs %}
+                    <div class="col-md-4 mb-3">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h6 class="card-title">{{ doc.document_type.replace('_', ' ').title() }}</h6>
+                                <p class="card-text">
+                                    Status: <span class="badge bg-{{ 'success' if doc.status == 'approved' else 'warning' if doc.status == 'pending' else 'danger' }}">
+                                        {{ doc.status.title() }}
+                                    </span>
+                                </p>
+                                <p class="card-text">Uploaded: {{ doc.uploaded_at.strftime('%Y-%m-%d %H:%M') }}</p>
+                                {% if doc.file_path.lower().endswith(('.jpg', '.jpeg', '.png', '.gif')) %}
+                                    <img src="/uploads/verification_docs/{{ doc.file_path }}" class="img-fluid rounded" style="max-height: 150px; object-fit: cover;" alt="{{ doc.document_type }}">
+                                {% else %}
+                                    <p class="text-muted mb-2">Document file: {{ doc.file_path.split('_')[-1] }}</p>
+                                    <a href="/uploads/verification_docs/{{ doc.file_path }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-download me-1"></i>Download
+                                    </a>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+
+                <div class="mt-3">
+                    {% if provider.verification_docs %}
+                    <button class="btn btn-success me-2 verify-btn" data-provider="{{ provider.id }}" data-action="verify" data-docs='[{% for doc in provider.verification_docs %}{{ doc.id }}{% if not loop.last %},{% endif %}{% endfor %}]'>
+                        <i class="fas fa-check me-1"></i>Verify
+                    </button>
+                    <button class="btn btn-danger me-2 verify-btn" data-provider="{{ provider.id }}" data-action="reject" data-docs='[{% for doc in provider.verification_docs %}{{ doc.id }}{% if not loop.last %},{% endif %}{% endfor %}]'>
+                        <i class="fas fa-times me-1"></i>Reject
+                    </button>
+                    {% else %}
+                    <button class="btn btn-secondary me-2" disabled>No Documents</button>
+                    {% endif %}
+                    <button class="btn btn-info" onclick="viewNotes({{ provider.id }})">
+                        <i class="fas fa-sticky-note me-1"></i>View Notes
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="alert alert-info text-center py-5">
+            <i class="fas fa-info-circle fa-3x mb-3"></i>
+            <h5>No pending verifications</h5>
+            <p>All providers are either verified or rejected.</p>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Admin Notes Modal -->
+<div class="modal fade" id="notesModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Admin Notes</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <textarea class="form-control" id="adminNotes" rows="4" placeholder="Add notes about this verification..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="submitNotes()">Save Notes</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add event listeners to verify buttons
+    document.querySelectorAll('.verify-btn').forEach(button => {
+        button.addEventListener('click', function() {
+            const providerId = this.getAttribute('data-provider');
+            const action = this.getAttribute('data-action');
+            const docsString = this.getAttribute('data-docs');
+
+            try {
+                const documentIds = JSON.parse(docsString);
+                verifyProvider(providerId, action, documentIds);
+            } catch (e) {
+                alert('Error parsing document IDs');
+            }
+        });
+    });
+});
+
+let currentProviderId = null;
+let currentAction = null;
+let currentDocumentIds = [];
+
+function verifyProvider(providerId, action, documentIds) {
+    currentProviderId = providerId;
+    currentAction = action;
+    currentDocumentIds = documentIds;
+
+    if (action === 'reject') {
+        document.getElementById('notesModal').querySelector('.modal-title').textContent = 'Rejection Notes';
+        document.getElementById('adminNotes').placeholder = 'Please provide reason for rejection...';
+    } else {
+        document.getElementById('notesModal').querySelector('.modal-title').textContent = 'Verification Notes';
+        document.getElementById('adminNotes').placeholder = 'Optional notes about this verification...';
+    }
+
+    new bootstrap.Modal(document.getElementById('notesModal')).show();
+}
+
+async function submitNotes() {
+    const notes = document.getElementById('adminNotes').value;
+
+    try {
+        const response = await fetch(`/admin/provider/verify/${currentProviderId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                action: currentAction,
+                admin_notes: notes,
+                document_ids: currentDocumentIds
+            })
+        });
+
+        const result = await response.json();
+
+        if (response.ok) {
+            alert(result.message);
+            location.reload();
+        } else {
+            alert('Error: ' + result.error);
+        }
+    } catch (error) {
+        alert('Verification failed: ' + error.message);
+    }
+
+    bootstrap.Modal.getInstance(document.getElementById('notesModal')).hide();
+}
+
+function viewNotes(providerId) {
+    alert('Notes viewing functionality would be implemented here');
+}
+</script>
+{% endblock %}
+{% endblock %}

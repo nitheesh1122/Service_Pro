@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+
+{% block title %}View Ratings - Admin Panel{% endblock %}
+
+{% block content %}
+<!-- Dashboard Header -->
+<section class="dashboard-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="admin-avatar mx-auto mx-md-0">
+                    <i class="fas fa-star"></i>
+                </div>
+                <h1 class="h2 mb-2">User Ratings & Reviews</h1>
+                <p class="mb-0 opacity-75">View all ratings and reviews from users</p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <div class="d-flex gap-2 justify-content-center justify-content-md-end">
+                    <button class="btn btn-light" onclick="location.reload()">
+                        <i class="fas fa-sync-alt me-2"></i>Refresh
+                    </button>
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-light">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <!-- Rating Statistics -->
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="stats-card info">
+                <div class="stats-icon">
+                    <i class="fas fa-star"></i>
+                </div>
+                <div class="stats-number">{{ avg_rating }}</div>
+                <div class="stats-label">Average Rating</div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stats-card success">
+                <div class="stats-icon">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <div class="stats-number">{{ reviews|length }}</div>
+                <div class="stats-label">Total Reviews</div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stats-card primary">
+                <div class="stats-icon">
+                    <i class="fas fa-thumbs-up"></i>
+                </div>
+                <div class="stats-number">
+                    {{ positive_reviews }}
+                </div>
+                <div class="stats-label">Positive Reviews</div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="stats-card warning">
+                <div class="stats-icon">
+                    <i class="fas fa-chart-bar"></i>
+                </div>
+                <div class="stats-number">
+                    {% if reviews|length > 0 %}
+                        {{ "%.1f"|format((positive_reviews / reviews|length) * 100) }}%
+                    {% else %}
+                        0%
+                    {% endif %}
+                </div>
+                <div class="stats-label">Satisfaction Rate</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rating Distribution -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-chart-pie me-2"></i>Rating Distribution
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                {% for rating, count, percentage in rating_distribution %}
+                <div class="col-md-2 text-center">
+                    <div class="mb-2">
+                        <span class="badge bg-primary fs-5">{{ rating }}★</span>
+                    </div>
+                    <div class="progress mb-2" style="height: 10px;">
+                        <div class="progress-bar rating-progress" data-percentage="{{ percentage }}"></div>
+                    </div>
+                    <small class="text-muted">{{ count }} review{{ 's' if count != 1 else '' }}</small>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviews Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-comments me-2"></i>All Reviews ({{ reviews|length }})
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if reviews %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Review ID</th>
+                                <th>Customer</th>
+                                <th>Provider</th>
+                                <th>Rating</th>
+                                <th>Comments</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for review_row in reviews %}
+                            {% set review = review_row[0] %}
+                            {% set user = review_row[1] %}
+                            {% set provider = review_row[2] %}
+                            {% set booking = review_row[3] %}
+                            <tr>
+                                <td>{{ review.id }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="provider-avatar me-2">
+                                            {{ user.name[0].upper() }}
+                                        </div>
+                                        <strong>{{ user.name }}</strong>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="provider-avatar me-2">
+                                            {{ provider.user.name[0].upper() }}
+                                        </div>
+                                        <strong>{{ provider.user.name }}</strong>
+                                    </div>
+                                </td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <span class="me-2">{{ review.rating }}</span>
+                                        {% for i in range(review.rating) %}
+                                            <i class="fas fa-star text-warning"></i>
+                                        {% endfor %}
+                                        {% for i in range(5 - review.rating) %}
+                                            <i class="far fa-star text-warning"></i>
+                                        {% endfor %}
+                                    </div>
+                                </td>
+                                <td>
+                                    <div>
+                                        {% if review.comments %}
+                                            <p class="mb-1">{{ review.comments[:100] }}{% if review.comments|length > 100 %}...{% endif %}</p>
+                                        {% else %}
+                                            <em class="text-muted">No comments provided</em>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                                <td>{{ review.created_at.strftime('%Y-%m-%d %H:%M') if review.created_at else 'Unknown' }}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-sm btn-outline-primary" title="View Full Review">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-info" title="View Booking Details">
+                                            <i class="fas fa-calendar"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <h4 class="text-muted">No reviews found</h4>
+                    <p class="text-muted">No reviews have been submitted yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+// Set progress bar widths dynamically
+document.addEventListener('DOMContentLoaded', function() {
+    const progressBars = document.querySelectorAll('.rating-progress');
+    progressBars.forEach(bar => {
+        const percentage = bar.getAttribute('data-percentage');
+        if (percentage) {
+            bar.style.width = percentage + '%';
+        }
+    });
+});
+
+// Rating management functions
+function viewFullReview(reviewId) {
+    // Implement view full review functionality
+    alert('View full review functionality would be implemented here');
+}
+
+function viewBookingDetails(bookingId) {
+    // Implement view booking details functionality
+    alert('View booking details functionality would be implemented here');
+}
+</script>
+{% endblock %}
+{% endblock %}

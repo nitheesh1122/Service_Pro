@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Users - Admin Panel{% endblock %}
+
+{% block content %}
+<!-- Dashboard Header -->
+<section class="dashboard-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-md-8">
+                <div class="admin-avatar mx-auto mx-md-0">
+                    <i class="fas fa-users"></i>
+                </div>
+                <h1 class="h2 mb-2">Manage Users</h1>
+                <p class="mb-0 opacity-75">View and manage all registered users</p>
+            </div>
+            <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                <div class="d-flex gap-2 justify-content-center justify-content-md-end">
+                    <button class="btn btn-light" onclick="location.reload()">
+                        <i class="fas fa-sync-alt me-2"></i>Refresh
+                    </button>
+                    <a href="{{ url_for('admin_dashboard') }}" class="btn btn-outline-light">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<div class="container">
+    <!-- Users Table -->
+    <div class="card">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-users me-2"></i>All Users ({{ users|length }})
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if users %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Role</th>
+                                <th>Status</th>
+                                <th>Joined</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for user in users %}
+                            <tr>
+                                <td>{{ user.id }}</td>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <div class="provider-avatar me-2">
+                                            {{ user.name[0].upper() }}
+                                        </div>
+                                        <strong>{{ user.name }}</strong>
+                                    </div>
+                                </td>
+                                <td>{{ user.email }}</td>
+                                <td>{{ user.phone or 'Not provided' }}</td>
+                                <td>
+                                    <span class="badge bg-{% if user.role == 'admin' %}danger{% elif user.role == 'provider' %}primary{% else %}secondary{% endif %}">
+                                        {{ user.role.title() }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{% if user.is_active %}success{% else %}danger{% endif %}">
+                                        {{ 'Active' if user.is_active else 'Inactive' }}
+                                    </span>
+                                </td>
+                                <td>{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else 'Unknown' }}</td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <button class="btn btn-sm btn-outline-primary" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn btn-sm btn-outline-warning" title="Edit User">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        {% if user.role != 'admin' %}
+                                        <button class="btn btn-sm btn-outline-danger" title="Delete User"
+                                                onclick="deleteUser({{ user.id }}, '{{ user.name }}')">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                        {% endif %}
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% else %}
+                <div class="text-center py-5">
+                    <div class="empty-state-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <h4 class="text-muted">No users found</h4>
+                    <p class="text-muted">No users have registered yet.</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+function deleteUser(userId, userName) {
+    if (confirm(`Are you sure you want to delete user "${userName}"? This action cannot be undone.`)) {
+        // Here you would implement the delete functionality
+        alert('Delete functionality would be implemented here');
+    }
+}
+</script>
+{% endblock %}
+{% endblock %}

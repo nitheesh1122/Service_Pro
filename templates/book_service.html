@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+
+{% block title %}Book Service - ServicePro{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">
+                        <i class="fas fa-calendar-plus me-2"></i>Book Service
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Provider Info -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <h5>{{ provider.user.name }}</h5>
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-phone me-2"></i>{{ provider.user.phone }}
+                            </p>
+                            <p class="text-muted mb-2">
+                                <i class="fas fa-envelope me-2"></i>{{ provider.user.email }}
+                            </p>
+                            {% if provider.service_categories %}
+                            <div class="mb-2">
+                                <strong>Services:</strong>
+                                {% for category in provider.service_categories.split(',') %}
+                                    <span class="badge bg-secondary me-1">{{ category.strip() }}</span>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            {% if provider.description %}
+                            <p class="text-muted">{{ provider.description }}</p>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-4 text-end">
+                            <div class="card bg-light">
+                                <div class="card-body text-center">
+                                    <h6>Hourly Rate</h6>
+                                    <h4 class="text-primary">${{ "%.2f"|format(provider.hourly_rate) }}</h4>
+                                    <small class="text-muted">per hour</small>
+                                </div>
+                            </div>
+                        </div>
+
+                    <!-- Booking Form -->
+                    <form method="POST" action="{{ url_for('book_service', provider_id=provider.id) }}">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Service Type</label>
+                                <div class="form-control-plaintext">
+                                    {% if services and services[0] %}
+                                        <strong>{{ services[0].category }}</strong>
+                                        <br>
+                                        <small class="text-muted">${{ "%.2f"|format(provider.hourly_rate) }}/hour</small>
+                                    {% else %}
+                                        <span class="text-muted">No service available</span>
+                                        <br>
+                                        <small class="text-warning">This provider's services don't match our current offerings</small>
+                                    {% endif %}
+                                </div>
+                                <!-- Hidden field to pass service_id -->
+                                {% if services and services[0] %}
+                                    <input type="hidden" name="service_id" value="{{ services[0].id }}">
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="booking_date" class="form-label">Date & Time *</label>
+                                <input type="datetime-local" class="form-control" id="booking_date" name="booking_date" required>
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="address" class="form-label">Service Address *</label>
+                            <textarea class="form-control" id="address" name="address" rows="3" required placeholder="Enter the complete address where you need the service"></textarea>
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle me-2"></i>Booking Information</h6>
+                            <ul class="mb-0">
+                                <li>You'll receive a confirmation once the provider accepts</li>
+                                <li>You can chat with the provider to discuss details</li>
+                                <li>Payment will be discussed with the provider</li>
+                                <li><strong>Booking Hours:</strong> Available from 8:00 AM to 8:00 PM IST only</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg" {% if not services or not services[0] %}disabled{% endif %}>
+                                <i class="fas fa-calendar-check me-2"></i>Book Service
+                            </button>
+                            <a href="{{ url_for('search_providers') }}" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to Search
+                            </a>
+                        </div>
+                    </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Set minimum date to today and time restrictions for IST
+document.addEventListener('DOMContentLoaded', function() {
+    const now = new Date();
+
+    // Set minimum date to today
+    const today = new Date(now);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // Format date for datetime-local input (YYYY-MM-DDTHH:MM)
+    const formatDateTimeLocal = (date) => {
+        const year = date.getFullYear();
+        const month = String(date.getMonth() + 1).padStart(2, '0');
+        const day = String(date.getDate()).padStart(2, '0');
+        return `${year}-${month}-${day}`;
+    };
+
+    // Set minimum date to tomorrow (can't book for today)
+    const minDate = formatDateTimeLocal(tomorrow) + 'T08:00'; // Start from 8:00 AM IST
+    document.getElementById('booking_date').min = minDate;
+
+    // Set maximum time to 8:00 PM IST for any selected date
+    const maxTime = 'T20:00'; // 8:00 PM IST
+
+    // Function to update max time when date changes
+    const updateMaxTime = () => {
+        const selectedDate = document.getElementById('booking_date').value;
+        if (selectedDate) {
+            const maxDateTime = selectedDate.substring(0, 11) + maxTime;
+            document.getElementById('booking_date').max = maxDateTime;
+        }
+    };
+
+    // Update max time when date input changes
+    document.getElementById('booking_date').addEventListener('change', updateMaxTime);
+
+    // Initial max time setup
+    updateMaxTime();
+});
+</script>
+{% endblock %}
