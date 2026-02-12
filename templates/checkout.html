@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+
+{% block title %}Checkout - ServicePro{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-credit-card me-2"></i>Mock Checkout</h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted">This is a mock payment page for demonstration only. No real payment will be processed.</p>
+                    <form method="POST" action="{{ url_for('checkout_confirm') }}">
+                        <div class="mb-3">
+                            <label class="form-label">Cardholder Name</label>
+                            <input type="text" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Card Number</label>
+                            <input type="text" class="form-control" placeholder="4242 4242 4242 4242" required>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">Expiry</label>
+                                <input type="text" class="form-control" placeholder="MM/YY" required>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">CVC</label>
+                                <input type="text" class="form-control" placeholder="123" required>
+                            </div>
+                        </div>
+                        <div class="d-grid gap-2 mt-4">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check me-2"></i>Pay Now (Mock)
+                            </button>
+                            <a href="{{ url_for('index') }}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+
+{% block title %}Notifications - ServicePro{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-bell me-2"></i>Your Notifications</h5>
+                    <button class="btn btn-outline-primary btn-sm" id="markReadBtn">
+                        <i class="fas fa-check-double me-1"></i>Mark all as read
+                    </button>
+                </div>
+                <div class="card-body">
+                    {% if notifications %}
+                        <div class="list-group">
+                            {% for n in notifications %}
+                            <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-start">
+                                <div class="ms-2 me-auto">
+                                    <div class="fw-bold">{{ n.title }}</div>
+                                    <div class="small text-muted">{{ n.created_at.strftime('%Y-%m-%d %H:%M') }}</div>
+                                    <div>{{ n.message }}</div>
+                                </div>
+                                {% if not n.is_read %}
+                                <span class="badge bg-{{ 'success' if n.type=='success' else 'warning' if n.type=='warning' else 'info' }} rounded-pill">new</span>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No notifications yet</h5>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.getElementById('markReadBtn')?.addEventListener('click', function() {
+    fetch('{{ url_for('mark_notifications_read') }}', { method: 'POST' })
+      .then(() => location.reload())
+      .catch(() => {});
+});
+</script>
+{% endblock %}
+
